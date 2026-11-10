@@ -102,14 +102,18 @@ docs/                概念设计与技术方案
 
 ## 演示视频
 
-[3 分钟演示（76 秒版）](docs/lighthouse_demo.mp4) · 1080p · 中文字幕旁白（edge-tts）· 实录线上模型
+[3 分钟演示（78 秒版，Ian 音色）](docs/lighthouse_demo_ian.mp4) · 1080p · IndexTTS-2 情感配音 · 实录线上模型
+
+早期机器音版本：[docs/lighthouse_demo.mp4](docs/lighthouse_demo.mp4)
 
 ## 交付文档
 
 - `docs/演示脚本_3分钟.md`：分镜、旁白、备用方案
 - `docs/参赛手记.md`：设计取舍、三个失败与修正、评审权重映射
 - `docs/提交清单.md`：12-01 前必交项与自查
-- `docs/lighthouse_demo.mp4`：演示视频（76 秒）
+- `docs/lighthouse_demo_ian.mp4`：演示视频（78 秒，Ian 音色，IndexTTS-2）
+- `docs/lighthouse_demo.mp4`：演示视频（76 秒，edge-tts 机器音，留档）
+- `scripts/gen_vo_indextts.py`：IndexTTS-2 情感配音（Ian 43s 参考音，α=0.4）
 - `scripts/record_demo.py` / `scripts/assemble_demo.py`：录制与配音合成
 
 ## 已知边界

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import asyncio
 import json
 import math
@@ -13,6 +14,7 @@ DEMO = ROOT / "assets" / "demo"
 RAW = DEMO / "raw_demo.webm"
 TIMELINE = DEMO / "timeline.json"
 OUT = DEMO / "lighthouse_demo.mp4"
+IAN_DIR = DEMO / "vo_indextts"
 FONT = "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc"
 VOICE = "zh-CN-YunxiNeural"
 
@@ -51,6 +53,11 @@ def gen_segment(text, target, path):
 
 
 def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--voice", choices=["edge", "indextts"], default="edge")
+    ap.add_argument("--out", default=None)
+    args = ap.parse_args()
+    out_path = Path(args.out) if args.out else OUT
     tl = json.loads(TIMELINE.read_text(encoding="utf-8"))
     keys = ["intro", "design", "give", "key", "oldman", "ending", "outro"]
     starts = {k: tl[k] for k in keys}
@@ -59,26 +66,41 @@ def main():
     total = max(total_video, tl["end"] + pad_tail) + 0.8
 
     seg_files = []
-    for i, (key, text) in enumerate(SEGMENTS):
-        if key == "intro":
-            start = 0.6
-        else:
-            start = starts[key]
-        if key == "outro":
-            target = max(6.0, total_video - start + pad_tail)
-        else:
-            nxt = keys[i + 1]
-            target = max(4.0, starts[nxt] - start - 0.3)
-        path = DEMO / f"vo_{i}_{key}.mp3"
-        d = gen_segment(text, target, path)
-        print(f"{key}: start={start:.2f}s target={target:.2f}s dur={d:.2f}s", flush=True)
-        seg_files.append((start, path, d))
+    if args.voice == "indextts":
+        meta = json.loads((IAN_DIR / "meta.json").read_text(encoding="utf-8"))
+        for i, row in enumerate(meta["rows"]):
+            key = row["key"]
+            path = IAN_DIR / row["file"]
+            d = dur(path)
+            if key == "closing":
+                continue
+            start = 0.6 if key == "intro" else starts[key]
+            print(f"{key}: start={start:.2f}s dur={d:.2f}s", flush=True)
+            seg_files.append((start, path, d))
+        closing_path = IAN_DIR / meta["rows"][-1]["file"]
+        closing_start = max(total_video - 1.0, tl["end"] - 0.2)
+    else:
+        for i, (key, text) in enumerate(SEGMENTS):
+            if key == "intro":
+                start = 0.6
+            else:
+                start = starts[key]
+            if key == "outro":
+                target = max(6.0, total_video - start + pad_tail)
+            else:
+                nxt = keys[i + 1]
+                target = max(4.0, starts[nxt] - start - 0.3)
+            path = DEMO / f"vo_{i}_{key}.mp3"
+            d = gen_segment(text, target, path)
+            print(f"{key}: start={start:.2f}s target={target:.2f}s dur={d:.2f}s", flush=True)
+            seg_files.append((start, path, d))
 
-    closing_path = DEMO / "vo_closing.mp3"
-    asyncio.run(synth("代码开源，九十四个单测，四个结局可复现。链接在简介里。", "+8%", closing_path))
-    closing_start = total_video - 0.5
+        closing_path = DEMO / "vo_closing.mp3"
+        asyncio.run(synth("代码开源，九十四个单测，四个结局可复现。链接在简介里。", "+8%", closing_path))
+        closing_start = total_video - 0.5
     seg_files.append((closing_start, closing_path, dur(closing_path)))
     total = max(total, closing_start + dur(closing_path) + 1.0)
+    pad_tail = max(pad_tail, total - total_video)
 
     inputs = ["-i", str(RAW)]
     for _, path, _ in seg_files:
@@ -113,10 +135,10 @@ def main():
         "-vf", vf,
         "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p",
         "-c:a", "aac", "-b:a", "160k", "-ar", "44100",
-        "-t", f"{total:.2f}", "-movflags", "+faststart", str(OUT),
+        "-t", f"{total:.2f}", "-movflags", "+faststart", str(out_path),
     ]
     subprocess.run(cmd, check=True)
-    print("OUT", OUT, "duration", round(dur(OUT), 2), "size_MB", round(OUT.stat().st_size / 1e6, 2))
+    print("OUT", out_path, "duration", round(dur(out_path), 2), "size_MB", round(out_path.stat().st_size / 1e6, 2))
 
 
 if __name__ == "__main__":
