@@ -67,7 +67,7 @@ body, .gradio-container {{
 """
 
 
-def panel_html(panel) -> str:
+def panel_html(panel, memory_refs: int = 0) -> str:
     if not panel:
         return ""
     blocks = ['<div class="panel-card">']
@@ -90,7 +90,7 @@ def panel_html(panel) -> str:
         f"<span>已给出物资</span><b style='color:#dbe6f2;font-size:16px'>{panel['given_count']}</b></div>"
     )
     blocks.append(
-        f'<div style="margin-top:6px;font-size:11px;color:#8296ac">回合 {panel["turn"]} · 模型 {panel.get("provider", "")}</div>'
+        f'<div style="margin-top:6px;font-size:11px;color:#8296ac">回合 {panel["turn"]} · 记忆引用 {memory_refs} 次 · 模型 {panel.get("provider", "")}</div>'
     )
     blocks.append("</div>")
     return "".join(blocks)
@@ -129,14 +129,14 @@ def new_session(second_run: bool = False):
     session = registry.sessions[sid]
     intro = "又一班船靠岸。他们看你的眼神，像记得上一局。" if second_run else "风暴把最后一班船按在了雾里。灯塔下，三个人在等你开口。"
     history = [{"role": "assistant", "content": f"旁白：{intro}"}]
-    return sid, history, panel_html(session.panel()), "", ""
+    return sid, history, panel_html(session.panel(), session.memory_reference_count), "", ""
 
 
 def on_send(message, history, sid, npc):
     history = history or []
     if not message or not message.strip():
         session = registry.sessions.get(sid)
-        return "", history, panel_html(session.panel() if session else None), log_html(sid), ""
+        return "", history, panel_html(session.panel() if session else None, session.memory_reference_count if session else 0), log_html(sid), ""
     if sid not in registry.sessions:
         sid = registry.create(sid)
     result = registry.turn(sid, npc, message)
@@ -147,7 +147,7 @@ def on_send(message, history, sid, npc):
     return (
         "",
         history,
-        panel_html(result["panel"]),
+        panel_html(result["panel"], registry.sessions[sid].memory_reference_count),
         log_html(sid),
         ending_md(result.get("ending")),
     )
@@ -167,7 +167,9 @@ FORCE_DARK = """
 with gr.Blocks(title="灯塔第七夜") as demo:
     session_state = gr.State("")
     gr.Markdown(
-        "# 灯塔第七夜\n风暴夜 · 最后一班船还有三小时 · 救生艇只有一个位置",
+        "# 灯塔第七夜\n风暴夜 · 最后一班船还有三小时 · 救生艇只有一个位置\n\n"
+        "**你的目标**：在船到之前套出三个人的秘密，决定谁上救生艇。"
+        "点「给面包 / 提钥匙 / 问真相」快速出招；右侧「规则层日志」能看到每次 LLM 提案与规则层采纳。",
         elem_id="title",
     )
     with gr.Row():
@@ -202,7 +204,7 @@ with gr.Blocks(title="灯塔第七夜") as demo:
         with gr.Column(scale=2):
             panel = gr.HTML()
             ending = gr.Markdown()
-            with gr.Accordion("规则层日志（LLM 只提案，规则层裁判）", open=False):
+            with gr.Accordion("规则层日志（LLM 只提案，规则层裁判）", open=True):
                 log = gr.HTML()
 
     demo.load(new_session, inputs=None, outputs=[session_state, chatbot, panel, log, ending])

@@ -100,6 +100,12 @@ docs/                概念设计与技术方案
 - [x] W4-2 创空间上线：https://modelscope.cn/studios/mayi140611/lighthouse-seventh-night （11-10，运行中）
 - [ ] W4-3 演示视频 + 参赛手记
 
+## 交付文档
+
+- `docs/演示脚本_3分钟.md`：分镜、旁白、备用方案
+- `docs/参赛手记.md`：设计取舍、三个失败与修正、评审权重映射
+- `docs/提交清单.md`：12-01 前必交项与自查
+
 ## 已知边界
 
 - 网页服务用 Python 标准库 `http.server`，便于本地零依赖运行；创空间要求 FastAPI/Gradio 入口，W4 再包一层壳。
