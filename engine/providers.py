@@ -84,8 +84,18 @@ class ScriptedProvider:
         fallback = NPC_PROFILES[target]["fallbacks"][
             (self.turn_no - 1) % len(NPC_PROFILES[target]["fallbacks"])
         ]
+        if intent == "threaten":
+            reply = "（他后退半步）你想干什么？"
+        elif intent == "reveal":
+            reply = "（他眼神闪了一下）……你怎么会知道这个。"
+        elif intent == "deflect":
+            reply = "（他别过脸）我不知道你在说什么。"
+        elif writes:
+            reply = "……谢谢。"
+        else:
+            reply = fallback
         return {
-            "reply": f"{fallback} {player_input[:24]}",
+            "reply": reply,
             "npc": target,
             "deltas": deltas,
             "memory_writes": writes,

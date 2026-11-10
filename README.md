@@ -36,10 +36,14 @@ python3 server.py --port 8080              # 网页版：状态面板 / 规则�
 python3 server.py --provider modelscope    # 网页版接线上模型（标准库，零依赖）
 ```
 
-创空间（FastAPI 入口，需要 `pip install -r requirements.txt`）：
+线上创空间（Gradio 入口）：https://modelscope.cn/studios/mayi140611/lighthouse-seventh-night
+
+本地两种入口：
 
 ```bash
-uvicorn app:app --host 0.0.0.0 --port 7860
+pip install -r requirements.txt
+python3 app.py                                  # Gradio（与线上一致，7860）
+uvicorn app_fastapi:app --port 7860             # 标准库版网页（FastAPI）
 ```
 
 部署步骤见 `docs/创空间部署.md`。
@@ -93,7 +97,8 @@ docs/                概念设计与技术方案
 - [x] W3-1 美术：3 背景 + 3 剪影立绘，网页场景随对话对象切换（11-10）
 - [ ] W3-2 音效 / 环境声
 - [x] W4-1 创空间壳（FastAPI `app.py` + requirements + 部署文档，本地已验证）
-- [ ] W4-2 创空间上线 + 演示视频 + 手记
+- [x] W4-2 创空间上线：https://modelscope.cn/studios/mayi140611/lighthouse-seventh-night （11-10，运行中）
+- [ ] W4-3 演示视频 + 参赛手记
 
 ## 已知边界
 
