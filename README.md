@@ -33,8 +33,16 @@ python3 -m unittest discover -s tests -v   # 84 个用例
 python3 cli.py --demo --save-dir saves     # 四条路线复现四个结局
 python3 cli.py                             # 交互模式（用脚本 NPC，不联网）
 python3 server.py --port 8080              # 网页版：状态面板 / 规则层日志 / 结局
-python3 server.py --provider modelscope    # 网页版接线上模型
+python3 server.py --provider modelscope    # 网页版接线上模型（标准库，零依赖）
 ```
+
+创空间（FastAPI 入口，需要 `pip install -r requirements.txt`）：
+
+```bash
+uvicorn app:app --host 0.0.0.0 --port 7860
+```
+
+部署步骤见 `docs/创空间部署.md`。
 
 零第三方依赖（仅 Python 3.9+ 标准库）。
 
@@ -84,7 +92,8 @@ docs/                概念设计与技术方案
 - [x] W2-2 网页 UI（状态面板 / 规则层日志 / 打字机 / 结局与二周目，stdlib 零依赖）
 - [x] W3-1 美术：3 背景 + 3 剪影立绘，网页场景随对话对象切换（11-10）
 - [ ] W3-2 音效 / 环境声
-- [ ] W4 创空间部署 + 演示视频 + 手记
+- [x] W4-1 创空间壳（FastAPI `app.py` + requirements + 部署文档，本地已验证）
+- [ ] W4-2 创空间上线 + 演示视频 + 手记
 
 ## 已知边界
 
