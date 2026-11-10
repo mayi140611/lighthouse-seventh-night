@@ -114,6 +114,8 @@ docs/                概念设计与技术方案
 - `docs/lighthouse_demo_ian.mp4`：演示视频（78 秒，Ian 音色，IndexTTS-2）
 - `docs/lighthouse_demo.mp4`：演示视频（76 秒，edge-tts 机器音，留档）
 - `scripts/gen_vo_indextts.py`：IndexTTS-2 情感配音（Ian 43s 参考音，α=0.4）
+- `scripts/preflight.py`：提交前自查（线上 10 轮时延、手机布局、控制台错误）
+- `docs/preflight_report.md`：最近一次自查报告
 - `scripts/record_demo.py` / `scripts/assemble_demo.py`：录制与配音合成
 
 ## 已知边界

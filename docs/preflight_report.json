@@ -1,0 +1,122 @@
+{
+  "ts": "2026-11-10 14:01:56",
+  "target": "https://modelscope.cn/studios/mayi140611/lighthouse-seventh-night",
+  "turns": [
+    {
+      "n": 1,
+      "npc": "sailor",
+      "latency_s": 2.46,
+      "turn_advanced": true,
+      "fallback": false,
+      "ending": false
+    },
+    {
+      "n": 2,
+      "npc": "sailor",
+      "latency_s": 2.45,
+      "turn_advanced": true,
+      "fallback": false,
+      "ending": false
+    },
+    {
+      "n": 3,
+      "npc": "girl",
+      "latency_s": 3.07,
+      "turn_advanced": true,
+      "fallback": false,
+      "ending": false
+    },
+    {
+      "n": 4,
+      "npc": "oldman",
+      "latency_s": 2.46,
+      "turn_advanced": true,
+      "fallback": false,
+      "ending": false
+    },
+    {
+      "n": 5,
+      "npc": "sailor",
+      "latency_s": 3.37,
+      "turn_advanced": true,
+      "fallback": false,
+      "ending": false
+    },
+    {
+      "n": 6,
+      "npc": "girl",
+      "latency_s": 3.37,
+      "turn_advanced": true,
+      "fallback": false,
+      "ending": false
+    },
+    {
+      "n": 7,
+      "npc": "oldman",
+      "latency_s": 2.46,
+      "turn_advanced": true,
+      "fallback": false,
+      "ending": false
+    },
+    {
+      "n": 8,
+      "npc": "sailor",
+      "latency_s": 3.07,
+      "turn_advanced": true,
+      "fallback": false,
+      "ending": false
+    },
+    {
+      "n": 9,
+      "npc": "girl",
+      "latency_s": 2.49,
+      "turn_advanced": true,
+      "fallback": false,
+      "ending": false
+    },
+    {
+      "n": 10,
+      "npc": "oldman",
+      "latency_s": 3.71,
+      "turn_advanced": true,
+      "fallback": false,
+      "ending": false
+    }
+  ],
+  "console_errors": [
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: net::ERR_HTTP2_PROTOCOL_ERROR",
+    "Failed to load resource: net::ERR_HTTP2_PROTOCOL_ERROR",
+    "Failed to load resource: net::ERR_HTTP2_PROTOCOL_ERROR",
+    "Failed to load resource: net::ERR_CONNECTION_CLOSED"
+  ],
+  "mobile": {
+    "ok": true,
+    "horizontal_overflow_px": 0
+  },
+  "load_s": 11.75,
+  "summary": {
+    "turns_ok": 10,
+    "turns_total": 10,
+    "latency_avg_s": 2.89,
+    "latency_max_s": 3.71,
+    "under_6s": true,
+    "console_error_count": 5,
+    "mobile_ok": true
+  },
+  "unit_tests": {
+    "rc": 0,
+    "tail": [
+      "Ran 94 tests in 0.526s",
+      "",
+      "OK"
+    ]
+  },
+  "fallback_path": {
+    "fallback": true,
+    "errors": [
+      "provider 异常: RuntimeError: network down"
+    ],
+    "reply": "“别问我，我只想活着上船。”"
+  }
+}
