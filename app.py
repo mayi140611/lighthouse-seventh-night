@@ -153,7 +153,12 @@ def on_send(message, history, sid, npc):
     )
 
 
-def restart(second_run: bool):
+def restart(second_run: bool, sid: str = ""):
+    if sid and sid in registry.sessions:
+        sid = registry.reset(sid, second_run=second_run)
+        session = registry.sessions[sid]
+        intro = "又一班船靠岸。他们看你的眼神，像记得上一局。" if second_run else "风暴把最后一班船按在了雾里。灯塔下，三个人在等你开口。"
+        return sid, [{"role": "assistant", "content": f"旁白：{intro}"}], panel_html(session.panel(), session.memory_reference_count), "", ""
     return new_session(second_run)
 
 
@@ -218,8 +223,8 @@ with gr.Blocks(title="灯塔第七夜") as demo:
         inputs=[message, chatbot, session_state, npc],
         outputs=[message, chatbot, panel, log, ending],
     )
-    restart_btn.click(lambda: restart(False), outputs=[session_state, chatbot, panel, log, ending])
-    again_btn.click(lambda: restart(True), outputs=[session_state, chatbot, panel, log, ending])
+    restart_btn.click(lambda sid: restart(False, sid), inputs=[session_state], outputs=[session_state, chatbot, panel, log, ending])
+    again_btn.click(lambda sid: restart(True, sid), inputs=[session_state], outputs=[session_state, chatbot, panel, log, ending])
 
 if __name__ == "__main__":
     demo.queue().launch(
