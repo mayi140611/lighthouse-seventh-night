@@ -32,6 +32,8 @@ LLM 适配层 ──► 提案 {reply, deltas, memory_writes, intent}
 python3 -m unittest discover -s tests -v   # 84 个用例
 python3 cli.py --demo --save-dir saves     # 四条路线复现四个结局
 python3 cli.py                             # 交互模式（用脚本 NPC，不联网）
+python3 server.py --port 8080              # 网页版：状态面板 / 规则层日志 / 结局
+python3 server.py --provider modelscope    # 网页版接线上模型
 ```
 
 零第三方依赖（仅 Python 3.9+ 标准库）。
@@ -75,9 +77,14 @@ docs/                概念设计与技术方案
 
 - [x] W1 规则层 + 单测 + CLI（11-10）
 - [x] W2-1 LLM 通道（ModelScope API-Inference / 任意 OpenAI 兼容端点，11-10 实测 2.2s/轮）
-- [ ] W2-2 前端 UI + 记忆层打磨
+- [x] W2-2 网页 UI（状态面板 / 规则层日志 / 打字机 / 结局与二周目，stdlib 零依赖）
 - [ ] W3 ComfyUI 美术 / 音效 / 规则层日志面板 / 二周目
 - [ ] W4 创空间部署 + 演示视频 + 手记
+
+## 已知边界
+
+- 网页服务用 Python 标准库 `http.server`，便于本地零依赖运行；创空间要求 FastAPI/Gradio 入口，W4 再包一层壳。
+- 记忆引用（NPC 主动提起玩家旧事）目前由提示词与规则层共同保证，尚未做「引用命中率」度量，W3 补。
 
 ## License
 

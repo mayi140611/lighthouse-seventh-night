@@ -56,10 +56,13 @@ class ScriptedProvider:
                 target = key
                 break
         intent = "bargain"
-        for word, value in KEYWORD_INTENTS.items():
-            if word in player_input:
-                intent = value
-                break
+        if any(word in player_input for word in ("威胁", "抢", "滚", "留在这儿", "不给")):
+            intent = "threaten"
+        else:
+            for word, value in KEYWORD_INTENTS.items():
+                if word in player_input:
+                    intent = value
+                    break
         if intent in ("threaten",):
             deltas = {"trust": -8, "fear": 8, "debt": 0}
             writes = [{"who": target, "type": "threat", "text": player_input[:40]}]

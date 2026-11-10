@@ -134,6 +134,26 @@ class TestSaveAndPreviousRun(unittest.TestCase):
             self.assertIsNone(load_previous_run(str(path)))
 
 
+class TestGiftCounting(unittest.TestCase):
+    def test_resource_counted_once(self):
+        session = GameSession(ScriptedProvider())
+        session.turn("面包给你。", npc="sailor")
+        session.turn("再给你一块面包。", npc="sailor")
+        self.assertEqual(session.given_count, 1)
+
+    def test_threat_does_not_count_gift(self):
+        session = GameSession(ScriptedProvider())
+        session.turn("不给面包我就抢。", npc="sailor")
+        self.assertEqual(session.given_count, 0)
+
+    def test_three_resources_count_three(self):
+        session = GameSession(ScriptedProvider())
+        session.turn("面包给你。", npc="sailor")
+        session.turn("干柴给你。", npc="sailor")
+        session.turn("绷带给你。", npc="sailor")
+        self.assertEqual(session.given_count, 3)
+
+
 class TestPanel(unittest.TestCase):
     def test_panel_shape(self):
         session = GameSession(ScriptedProvider())

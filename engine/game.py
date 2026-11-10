@@ -39,7 +39,9 @@ class GameSession:
         self.turn_no = 0
         self.npc_turns = {npc: 0 for npc in NPC_KEYS}
         self.given_count = 0
+        self.given_resources: set[str] = set()
         self.ending: str | None = None
+        self.max_turns = 24
         self.history: list[dict] = []
         self.memory_reference_count = 0
         if previous_run:
@@ -74,6 +76,16 @@ class GameSession:
             self.ending = determine_ending(self.states, self.flags, self.given_count)
             self._save()
         return self.ending
+
+    def _implicit_action(self, target: str, intent: str, player_input: str) -> str | None:
+        text = player_input or ""
+        if target == "sailor" and intent in ("reveal", "bargain", "threaten"):
+            if any(word in text for word in ("钥匙", "开门", "救生艇")):
+                return "take_key"
+        if target == "oldman" and intent in ("reveal", "bargain"):
+            if any(word in text for word in ("真相", "第七夜", "灯下", "灯芯")):
+                return "learn_truth"
+        return None
 
     def panel(self) -> dict:
         return {
@@ -140,7 +152,7 @@ class GameSession:
             rejected_intent = True
             writes = []
 
-        action = proposal.get("action")
+        action = proposal.get("action") or self._implicit_action(target, intent, player_input)
         action_note = ""
         if action:
             action_ok, action_reason = gate_action(self.states[target], action)
@@ -156,7 +168,14 @@ class GameSession:
         added = self.memory.add_many(writes, self.turn_no)
         for entry in added:
             if entry.type == "gift":
-                self.given_count += 1
+                resource = next((w for w in ("面包", "干柴", "绷带") if w in entry.text), entry.text[:8])
+                self.given_resources.add(resource)
+        if intent != "threaten":
+            for resource in ("面包", "干柴", "绷带"):
+                if resource in player_input and resource not in self.given_resources:
+                    self.memory.add(target, "gift", f"给过{NPC_PROFILES[target]['name']}{resource}", self.turn_no)
+                    self.given_resources.add(resource)
+        self.given_count = len(self.given_resources)
         self.npc_turns[target] += 1
 
         refs = [e.text for e in memories if e.text and e.text[:8] in (proposal.get("reply") or "")]
@@ -166,7 +185,13 @@ class GameSession:
         if refs:
             self.memory_reference_count += 1
 
-        if any(state.trust < CATASTROPHE_TRUST for state in self.states.values()):
+        catastrophe = any(state.trust < CATASTROPHE_TRUST for state in self.states.values())
+        computed = determine_ending(self.states, self.flags, self.given_count)
+        if catastrophe:
+            self.ending = "第七夜"
+        elif computed != "第七夜":
+            self.ending = computed
+        elif self.turn_no >= self.max_turns:
             self.ending = "第七夜"
         result = TurnResult(
             ok=True,

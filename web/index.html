@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>灯塔第七夜 · Lighthouse: Seventh Night</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="fog"></div>
+<header>
+  <div class="brand">
+    <span class="lamp"></span>
+    <div>
+      <h1>灯塔第七夜</h1>
+      <p>风暴夜 · 最后一班船还有三小时 · 救生艇只有一个位置</p>
+    </div>
+  </div>
+  <div class="badges">
+    <span id="provider" class="badge">脚本 NPC</span>
+    <button id="toggle-log" class="ghost">规则层日志</button>
+    <button id="restart" class="ghost">重开</button>
+  </div>
+</header>
+
+<main>
+  <section class="stage">
+    <div id="dialogue" class="dialogue"></div>
+    <div class="composer">
+      <div id="speaking" class="speaking">你在对 船员 说话</div>
+      <div class="input-row">
+        <input id="message" autocomplete="off" placeholder="说点什么……（回车发送）">
+        <button id="send">说</button>
+      </div>
+      <div class="hints">
+        <button class="hint" data-text="面包给你，上船时带上我。">给面包</button>
+        <button class="hint" data-text="我只要钥匙开门，不会抢你的位置。">提钥匙</button>
+        <button class="hint" data-text="灯下面到底有什么？第七夜为什么不能灭灯？">问真相</button>
+        <button class="hint" data-text="把日志给我，不然我把你留在岛上。">威胁</button>
+      </div>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <h2>状态面板</h2>
+    <div id="npcs"></div>
+    <div class="resources">
+      <span>已给出物资</span><strong id="given">0</strong>
+    </div>
+    <div id="log" class="log hidden">
+      <h3>规则层日志</h3>
+      <p class="tip">LLM 只提案，规则层决定采纳多少；结局只由状态机算。</p>
+      <div id="log-body"></div>
+    </div>
+  </aside>
+</main>
+
+<div id="ending" class="ending hidden">
+  <div class="ending-card">
+    <p class="eyebrow">本局结束</p>
+    <h2 id="ending-title"></h2>
+    <p id="ending-text"></p>
+    <div class="ending-actions">
+      <button id="again" class="primary">再来一局（保留记忆）</button>
+      <button id="fresh" class="ghost">全新开局</button>
+    </div>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>
