@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import json
+import mimetypes
 import sys
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -44,20 +45,22 @@ def make_handler(registry: SessionRegistry):
         def do_GET(self):
             parsed = urlparse(self.path)
             path = parsed.path
-            if path in STATIC:
-                file_path = WEB_DIR / STATIC[path]
-                if not file_path.exists():
-                    return self._json(404, {"error": "missing web asset"})
-                data = file_path.read_bytes()
-                self.send_response(200)
-                ctype = "text/html; charset=utf-8" if path in ("/", "/index.html") else (
-                    "application/javascript; charset=utf-8" if path.endswith(".js") else "text/css; charset=utf-8"
-                )
-                self.send_header("Content-Type", ctype)
-                self.send_header("Content-Length", str(len(data)))
-                self.end_headers()
-                self.wfile.write(data)
-                return
+            if not path.startswith("/api"):
+                rel = path.lstrip("/") or "index.html"
+                file_path = (WEB_DIR / rel).resolve()
+                if WEB_DIR.resolve() in file_path.parents and file_path.is_file():
+                    data = file_path.read_bytes()
+                    ctype = mimetypes.guess_type(str(file_path))[0] or "application/octet-stream"
+                    if ctype.startswith("text/") or ctype in ("application/javascript",):
+                        ctype += "; charset=utf-8"
+                    self.send_response(200)
+                    self.send_header("Content-Type", ctype)
+                    self.send_header("Content-Length", str(len(data)))
+                    self.send_header("Cache-Control", "public, max-age=86400")
+                    self.end_headers()
+                    self.wfile.write(data)
+                    return
+                return self._json(404, {"error": "missing web asset"})
             if path == "/api/state":
                 sid = (parse_qs(parsed.query).get("session_id") or [""])[0]
                 state = registry.state(sid)

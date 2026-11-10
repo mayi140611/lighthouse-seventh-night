@@ -5,6 +5,16 @@ const PORTRAITS = {
   girl: "湿发 · 泡皱的航海日志",
   oldman: "驼背 · 提灯 · 袖口盐渍",
 };
+const AVATARS = {
+  sailor: "/art/portrait_sailor.jpg",
+  girl: "/art/portrait_girl.jpg",
+  oldman: "/art/portrait_oldman.jpg",
+};
+const SCENES = {
+  sailor: "/art/bg_lighthouse.jpg",
+  girl: "/art/bg_shore.jpg",
+  oldman: "/art/bg_lamp.jpg",
+};
 
 const ENDING_TEXT = {
   同舟: "救生艇挤下了所有人。天亮时，灯塔还亮着，你们谁也没回头。",
@@ -85,6 +95,7 @@ function renderPanel(panel) {
     card.dataset.npc = key;
     card.innerHTML = `
       <div class="row">
+        <img class="avatar" src="${AVATARS[key]}" alt="${NPC_NAMES[key]}">
         <span class="name">${NPC_NAMES[key]}</span>
         <span class="portrait">${PORTRAITS[key]}</span>
       </div>
@@ -93,12 +104,17 @@ function renderPanel(panel) {
       ${statBar("亏欠", st.debt, "debt")}
     `;
     card.addEventListener("click", () => {
-      state.npc = key;
-      el.speaking.textContent = `你在对 ${NPC_NAMES[key]} 说话`;
+      setScene(key);
       renderPanel(panel);
     });
     el.npcs.appendChild(card);
   }
+}
+
+function setScene(key) {
+  state.npc = key;
+  el.speaking.textContent = `你在对 ${NPC_NAMES[key]} 说话`;
+  document.body.style.setProperty("--scene", `url("${SCENES[key]}")`);
 }
 
 function statBar(label, value, kind) {
@@ -182,8 +198,7 @@ async function newGame(secondRun) {
   el.logBody.innerHTML = "";
   el.ending.classList.add("hidden");
   renderPanel(data.panel);
-  state.npc = "sailor";
-  el.speaking.textContent = "你在对 船员 说话";
+  setScene("sailor");
   addLine(
     "旁白",
     secondRun ? "又一班船靠岸。他们看你的眼神，像记得上一局。" : "风暴把最后一班船按在了雾里。灯塔下，三个人在等你开口。",

@@ -14,10 +14,13 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(1200px 600px at 70% -10%, rgba(240, 180, 41, 0.10), transparent 60%),
-    radial-gradient(900px 500px at 10% 110%, rgba(95, 168, 211, 0.12), transparent 60%),
-    var(--bg);
+  background-image:
+    linear-gradient(180deg, rgba(4, 8, 14, 0.72), rgba(4, 8, 14, 0.92) 60%, rgba(4, 8, 14, 0.97)),
+    var(--scene, url("/art/bg_lighthouse.jpg"));
+  background-size: cover, cover;
+  background-position: center, center;
+  background-attachment: fixed, fixed;
+  background-color: var(--bg);
   color: var(--text);
   font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
   overflow-x: hidden;
@@ -207,7 +210,14 @@ aside h2 { margin: 0 0 14px; font-size: 14px; letter-spacing: 0.16em; color: var
 }
 .npc:hover { background: rgba(255, 255, 255, 0.03); }
 .npc.active { border-color: rgba(240, 180, 41, 0.45); background: rgba(240, 180, 41, 0.05); }
-.npc .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.npc .row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  object-fit: cover; object-position: 50% 30%;
+  border: 1px solid rgba(160, 190, 220, 0.25);
+  filter: saturate(0.85);
+}
+.npc .row .name { flex: 1; }
 .npc .name { font-size: 14px; font-weight: 600; }
 .npc .portrait { font-size: 11px; color: var(--muted); }
 
