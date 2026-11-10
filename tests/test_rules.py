@@ -323,3 +323,38 @@ class TestMemoryStore(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestParseJsonContent(unittest.TestCase):
+    def test_plain(self):
+        from engine.providers import parse_json_content
+
+        self.assertEqual(parse_json_content('{"a":1}'), {"a": 1})
+
+    def test_code_fence(self):
+        from engine.providers import parse_json_content
+
+        self.assertEqual(parse_json_content('```json\n{"a":1}\n```'), {"a": 1})
+
+    def test_surrounding_text(self):
+        from engine.providers import parse_json_content
+
+        self.assertEqual(parse_json_content('好的：{"a":1} 以上'), {"a": 1})
+
+    def test_no_json(self):
+        from engine.providers import ProviderError, parse_json_content
+
+        with self.assertRaises(ProviderError):
+            parse_json_content("没有对象")
+
+    def test_non_dict(self):
+        from engine.providers import ProviderError, parse_json_content
+
+        with self.assertRaises(ProviderError):
+            parse_json_content("[1,2]")
+
+    def test_broken_json(self):
+        from engine.providers import ProviderError, parse_json_content
+
+        with self.assertRaises(ProviderError):
+            parse_json_content('{"a":}')

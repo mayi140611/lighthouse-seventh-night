@@ -107,16 +107,18 @@ class GameSession:
             )
         self.turn_no += 1
         memories = self.memory.retrieve(npc, player_input, self.turn_no)
-        strict = False
-        proposal = self.provider.propose(npc, player_input, self.states[npc], memories, strict)
         errors: list[str] = []
-        ok, errors = validate_proposal(proposal)
-        if not ok:
-            strict = True
-            proposal = self.provider.propose(npc, player_input, self.states[npc], memories, strict)
+        try:
+            proposal = self.provider.propose(npc, player_input, self.states[npc], memories, False)
             ok, errors = validate_proposal(proposal)
+            if not ok:
+                proposal = self.provider.propose(npc, player_input, self.states[npc], memories, True)
+                ok, errors = validate_proposal(proposal)
+        except Exception as exc:
+            ok, errors = False, [f"provider 异常: {type(exc).__name__}: {exc}"]
+            proposal = {}
         if not ok:
-            proposal = self._fallback(npc, "结构校验两次失败", errors)
+            proposal = self._fallback(npc, "结构校验两次失败" if not errors else "", errors)
         else:
             proposal.setdefault("fallback", False)
             proposal.setdefault("validation_errors", [])

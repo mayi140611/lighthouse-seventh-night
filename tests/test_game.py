@@ -145,3 +145,26 @@ class TestPanel(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestProviderFailure(unittest.TestCase):
+    def test_provider_exception_falls_back(self):
+        class BoomProvider:
+            def propose(self, *args, **kwargs):
+                raise RuntimeError("network down")
+
+        session = GameSession(BoomProvider())
+        result = session.turn("你好", npc="sailor")
+        self.assertTrue(result.fallback)
+        self.assertTrue(any("provider 异常" in e for e in result.validation_errors))
+        self.assertEqual(session.turn_no, 1)
+
+    def test_system_prompt_contains_state(self):
+        from engine.models import NPCState
+        from engine.providers import ModelScopeProvider
+
+        provider = ModelScopeProvider(api_key="x", base_url="https://example.com/v1")
+        prompt = provider.system_prompt("sailor", NPCState(trust=41, fear=12, debt=3), ["给过面包"])
+        self.assertIn("信任 41", prompt)
+        self.assertIn("给过面包", prompt)
+        self.assertIn("JSON", prompt)

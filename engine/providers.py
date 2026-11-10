@@ -108,3 +108,114 @@ class InvalidProvider:
             "memory_writes": [],
             "intent": "silent",
         }
+
+
+class ProviderError(RuntimeError):
+    pass
+
+
+def _strip_code_fence(text: str) -> str:
+    text = (text or "").strip()
+    if text.startswith("```"):
+        lines = text.splitlines()
+        if lines:
+            lines = lines[1:]
+        if lines and lines[-1].strip().startswith("```"):
+            lines = lines[:-1]
+        text = "\n".join(lines).strip()
+    return text
+
+
+def parse_json_content(content: str) -> dict:
+    import json
+
+    raw = _strip_code_fence(content)
+    start = raw.find("{")
+    end = raw.rfind("}")
+    if start < 0 or end < start:
+        raise ProviderError("模型输出里没有 JSON 对象")
+    try:
+        data = json.loads(raw[start : end + 1])
+    except json.JSONDecodeError as exc:
+        raise ProviderError(f"模型输出 JSON 解析失败: {exc}") from exc
+    if not isinstance(data, dict):
+        raise ProviderError("模型输出不是 JSON 对象")
+    return data
+
+
+class ModelScopeProvider:
+    def __init__(
+        self,
+        api_key=None,
+        base_url=None,
+        model=None,
+        timeout=30,
+        temperature=0.7,
+    ):
+        import os
+
+        self.api_key = api_key or os.environ.get("MODELSCOPE_API_KEY", "")
+        self.base_url = (base_url or os.environ.get("MODELSCOPE_API_BASE", "")).rstrip("/")
+        self.model = model or os.environ.get("MODELSCOPE_MODEL", "Qwen/Qwen3.8-Flash-Next")
+        self.timeout = timeout
+        self.temperature = temperature
+        self.last_latency = None
+        if not self.api_key or not self.base_url:
+            raise ProviderError("缺少 MODELSCOPE_API_KEY / MODELSCOPE_API_BASE")
+
+    def system_prompt(self, npc, state, memories) -> str:
+        profile = NPC_PROFILES[npc]
+        memory_lines = "\n".join(f"- {m}" for m in memories) or "（无）"
+        return (
+            f"你在演一个互动叙事游戏里的{NPC_PROFILES[npc]['name']}。\n"
+            f"设定：{profile['secret']}\n"
+            f"当前状态：信任 {state.trust}/100，恐惧 {state.fear}/100，亏欠 {state.debt}/100。\n"
+            f"你记得玩家做过的事：\n{memory_lines}\n"
+            "规则：台词不超过60字，符合角色口吻；不要替玩家做决定，不要说出这些数值。\n"
+            "只输出一个 JSON 对象，不要额外文字，格式：\n"
+            '{"reply":"台词","deltas":{"trust":整数-10..10,"fear":整数-10..10,"debt":整数-10..10},'
+            '"memory_writes":[{"who":"sailor|girl|oldman","type":"promise|gift|threat|secret|truth","text":"玩家做过的事"}],'
+            '"intent":"deflect|reveal|threaten|bargain|silent"}'
+        )
+
+    def propose(self, npc, player_input, state, memories, strict=False):
+        import json
+        import time
+        import urllib.error
+        import urllib.request
+
+        payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": self.system_prompt(npc, state, memories)},
+                {"role": "user", "content": player_input},
+            ],
+            "max_tokens": 200,
+            "temperature": 0.3 if strict else self.temperature,
+            "response_format": {"type": "json_object"},
+        }
+        if "Qwen" in self.model or "qwen" in self.model:
+            payload["enable_thinking"] = False
+        request = urllib.request.Request(
+            f"{self.base_url}/chat/completions",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+        started = time.time()
+        try:
+            with urllib.request.urlopen(request, timeout=self.timeout) as response:
+                body = json.loads(response.read().decode("utf-8"))
+        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
+            raise ProviderError(f"请求 API-Inference 失败: {exc}") from exc
+        self.last_latency = time.time() - started
+        choices = body.get("choices") or []
+        if not choices:
+            raise ProviderError(f"响应缺少 choices: {str(body)[:200]}")
+        message = choices[0].get("message") or {}
+        data = parse_json_content(message.get("content") or "")
+        data.setdefault("npc", npc)
+        return data

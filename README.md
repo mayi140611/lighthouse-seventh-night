@@ -29,12 +29,24 @@ LLM 适配层 ──► 提案 {reply, deltas, memory_writes, intent}
 ## 快速开始
 
 ```bash
-python3 -m unittest discover -s tests -v   # 76 个用例
+python3 -m unittest discover -s tests -v   # 84 个用例
 python3 cli.py --demo --save-dir saves     # 四条路线复现四个结局
-python3 cli.py                             # 交互模式（W1 用脚本 NPC，W2 接 LLM）
+python3 cli.py                             # 交互模式（用脚本 NPC，不联网）
 ```
 
-本阶段零第三方依赖（仅 Python 3.9+ 标准库）。
+零第三方依赖（仅 Python 3.9+ 标准库）。
+
+### 接入真实模型（可选）
+
+```bash
+export MODELSCOPE_API_KEY=ms-xxxxxxxx
+export MODELSCOPE_API_BASE=https://api-inference.modelscope.cn/v1
+export MODELSCOPE_MODEL=Qwen/Qwen3.8-Flash-Next
+python3 scripts/smoke_llm.py               # 三轮真实对局
+```
+
+可用任意 OpenAI 兼容端点；Qwen 系列会自动关闭 thinking 以压低时延（实测单轮约 2.2s）。
+模型输出非法时自动重试一次，仍失败则用角色预置兜底台词且状态不变。
 
 ## 四个结局
 
@@ -62,7 +74,8 @@ docs/                概念设计与技术方案
 ## 路线图
 
 - [x] W1 规则层 + 单测 + CLI（11-10）
-- [ ] W2 前端 UI + LLM 接入（OpenAI 兼容：ModelScope API-Inference）+ 记忆层
+- [x] W2-1 LLM 通道（ModelScope API-Inference / 任意 OpenAI 兼容端点，11-10 实测 2.2s/轮）
+- [ ] W2-2 前端 UI + 记忆层打磨
 - [ ] W3 ComfyUI 美术 / 音效 / 规则层日志面板 / 二周目
 - [ ] W4 创空间部署 + 演示视频 + 手记
 
