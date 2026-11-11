@@ -123,6 +123,11 @@ docs/                概念设计与技术方案
 - 网页服务用 Python 标准库 `http.server`，便于本地零依赖运行；创空间要求 FastAPI/Gradio 入口，W4 再包一层壳。
 - 记忆引用（NPC 主动提起玩家旧事）目前由提示词与规则层共同保证，尚未做「引用命中率」度量，W3 补。
 
+## 作者的其他在线项目
+
+- 定投复利计算器（附 14 年沪深300ETF 真实窗口回测）：<https://tools.cosmocat.dev/calc/dingtou/>
+- Craft 图文工具（浏览器内运行，不上传文件）：<https://craft.cosmocat.dev/app/craft-anything>
+
 ## License
 
 MIT
